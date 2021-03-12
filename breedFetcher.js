@@ -5,23 +5,38 @@
 // Require Request Module: to make the http request.
 const request = require("request");
 
-// Set url for Siberian
-const url = "https://api.thecatapi.com/v1/breeds/search?q=sib";
+// Set url for dynamic breed search
+// const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`;
 
-// Create variable to pass the given URL
-const breed = process.argv[2];
 
 // Use the callback based approach we've been learning so far
-request(url, (error, response, body) => {
+const fetchBreedDescription = (breedName, callback) => {
+
+  // Set url for dynamic breed search
+  const url = `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`;
+
+  request(url, (error, response, body) => {
     // console.log(body);
     // console.log(typeof body);
-  if (error) {
-    console.log("error:", error);  // Print the error if one occurred
-  }
+    if (error) {
+      callback("error: ", error);  // Print the error if one occurred
+    }  else if (body) {
+        
+      // Deserialization: convert the JSON string into an actual object
+      const data = JSON.parse(body);
+      const breed = data[0];
+      // console.log(data);
+      
+      if (data.length === 0) {
+        callback(null, breed.description);
 
-// Deserialization: convert the JSON string into an actual object  
-  const data = JSON.parse(body);
-    // console.log(data);
+      // Edge case: Breed not found
+      } else {
+        callback(`Breed ${breedName} not found`, null);
+      }
+    }
 
-    
-});
+  });
+};
+
+module.exports = { fetchBreedDescription };
